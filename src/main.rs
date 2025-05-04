@@ -1,24 +1,26 @@
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 
+mod db;
+mod handlers;
 mod models;
 mod routes;
-mod db;
+
+use routes::products::create_product_routes;
 
 
-use routes::products::product_routes;
 use db::init_db;
 
 #[tokio::main]
 async fn main() {
-
     let db_pool = init_db().await;
-    
-    let app = Router::new()
-        .route("/", get(root))
-        .with_state(db_pool)
-        .merge(product_routes());
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
+    let app = Router::new()
+    .route("/", get(root))
+    .merge(create_product_routes(db_pool.clone()));
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
+        .unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 

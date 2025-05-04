@@ -1,15 +1,12 @@
 use serde::{Serialize,Deserialize};
+use sqlx::FromRow;
 
-#[derive(Serialize)]
 #[derive(Clone)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Product {
-    pub id: u32,
+    pub id: i32,
     pub name: String,
+    pub description: Option<String>,
     pub price: f64,
-}
-
-#[derive(Deserialize)]
-pub struct ProductInput {
-    pub name: String,
-    pub price: f64,
+    pub in_stock: bool,
 }
