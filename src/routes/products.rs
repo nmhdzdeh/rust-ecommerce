@@ -14,7 +14,7 @@ pub fn product_routes() -> Router {
     let products = Arc::new(Mutex::new(vec![])); // shared state
     Router::new()
         .route("/products", get(get_products).post(create_product))
-        .route("/products/:id", delete(delete_product))
+        .route("/products/:id", delete(delete_product) .put(update_product))
         .with_state(products)
 }
 
@@ -50,5 +50,22 @@ async fn delete_product(State(products): State<ProductList>, Path(id): Path<u32>
         StatusCode::NO_CONTENT
     } else {
         StatusCode::NOT_FOUND
+    }
+}
+
+async fn update_product(
+    State(products): State<ProductList>,
+    Path(id): Path<u32>,
+    Json(payload): Json<ProductInput>,
+) -> Result<Json<Product>, StatusCode> {
+    let mut data = products.lock().unwrap();
+
+    if let Some(product) = data.iter_mut().find(|p| p.id == id) {
+        product.name = payload.name.clone();
+        product.price = payload.price;
+
+        Ok(Json(product.clone()))
+    } else {
+        Err(StatusCode::NOT_FOUND)
     }
 }
